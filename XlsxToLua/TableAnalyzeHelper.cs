@@ -11,7 +11,7 @@ public class TableAnalyzeHelper
     {
         if (dt.Rows.Count < AppValues.DATA_FIELD_DATA_START_INDEX)
         {
-            errorString = "表格格式不符合要求，必须在表格前五行中依次声明字段描述、字段名、数据类型、检查规则、导出到MySQL数据库中的配置";
+            errorString = "表格格式不符合要求，必须在表格前十行中依次声明字段描述、字段名、数据类型、检查规则、导出到MySQL数据库中的配置、导出类型、数据库表配置";
             return null;
         }
         if (dt.Columns.Count < 2)
@@ -159,7 +159,7 @@ public class TableAnalyzeHelper
         string checkRuleString = dt.Rows[AppValues.DATA_FIELD_CHECK_RULE_INDEX][columnIndex].ToString().Trim().Replace(System.Environment.NewLine, " ").Replace('\n', ' ').Replace('\r', ' ').Replace('\t', ' ');
         fieldInfo.CheckRule = string.IsNullOrEmpty(checkRuleString) ? null : checkRuleString;
         // 导出到数据库中的字段名及类型
-        string databaseInfoString = dt.Rows[AppValues.DATA_FIELD_EXPORT_DATABASE_FIELD_INFO][columnIndex].ToString().Trim();
+        string databaseInfoString = dt.Rows[AppValues.DATA_FIELD_EXPORT_DATABASE_FIELD_INDEX][columnIndex].ToString().Trim();
         if (string.IsNullOrEmpty(databaseInfoString))
         {
             fieldInfo.DatabaseFieldName = null;
@@ -178,6 +178,29 @@ public class TableAnalyzeHelper
 
             fieldInfo.DatabaseFieldName = databaseInfoString.Substring(0, leftBracketIndex);
             fieldInfo.DatabaseFieldType = databaseInfoString.Substring(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
+        }
+        // 导出类型字符串
+        string exportString = dt.Rows[AppValues.DATA_FIELD_EXPORT_TYPE_INDEX][columnIndex].ToString().Trim().Replace(System.Environment.NewLine, " ").Replace('\n', ' ').Replace('\r', ' ').Replace('\t', ' ');
+        if (!string.IsNullOrEmpty(exportString))
+        {
+            if (exportString.Equals(AppValues.EXPORT_ALL))
+            {
+                fieldInfo.ExportParam = ExportType.All;
+            }
+            else if (exportString.Equals(AppValues.EXPORT_CLIENT))
+            {
+                fieldInfo.ExportParam = ExportType.Client;
+            }
+            else if (exportString.Equals(AppValues.EXPORT_SERVER))
+            {
+                fieldInfo.ExportParam = ExportType.Server;
+            }
+            else
+            {
+                errorString = "第六行导出类型配置不对";
+                nextFieldColumnIndex = columnIndex + 1;
+                return null;
+            }
         }
         // 引用父FileInfo
         fieldInfo.ParentField = parentField;
@@ -1748,7 +1771,10 @@ public class TableAnalyzeHelper
                     childFieldInfo.FieldName = string.Format("[{0}]", seq);
                     ++seq;
 
-                    fieldInfo.ChildField.Add(childFieldInfo);
+                    if (childFieldInfo.ExportParam == ExportType.Client)
+                    {
+                        fieldInfo.ChildField.Add(childFieldInfo);
+                    }
                     --tempCount;
                 }
             }
@@ -1892,7 +1918,10 @@ public class TableAnalyzeHelper
                     else
                         inputFieldNames.Add(childFieldInfo.FieldName);
 
-                    fieldInfo.ChildField.Add(childFieldInfo);
+                    if (childFieldInfo.ExportParam == ExportType.Client)
+                    {
+                        fieldInfo.ChildField.Add(childFieldInfo);
+                    }
                     --tempCount;
                 }
             }

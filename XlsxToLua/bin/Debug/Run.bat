@@ -1,5 +1,5 @@
 @echo off
-XlsxToLua.exe TestExcel ExportLua ClientVirtual lang.txt -columnInfo -allowedNullNumber -printEmptyStringWhenLangNotMatching
+XlsxToLua.exe TestExcel ExportLua -noClient -noLang -columnInfo
 set errorLevel = %errorlevel%
 if errorLevel == 0 (
 	@echo 导出成功

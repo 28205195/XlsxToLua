@@ -39,20 +39,24 @@ public class XlsxReader
             DataTable dtSheet = conn.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
 
             // 必须存在数据表
-            bool isFoundDateSheet = false;
+            bool isFoundDataSheet = false;
             // 可选配置表
             bool isFoundConfigSheet = false;
+            // 可选导出配置表
+            bool isFoundExportConfigSheet = false;
 
             for (int i = 0; i < dtSheet.Rows.Count; ++i)
             {
                 string sheetName = dtSheet.Rows[i]["TABLE_NAME"].ToString();
 
                 if (sheetName == AppValues.EXCEL_DATA_SHEET_NAME)
-                    isFoundDateSheet = true;
+                    isFoundDataSheet = true;
                 else if (sheetName == AppValues.EXCEL_CONFIG_SHEET_NAME)
                     isFoundConfigSheet = true;
+                else if (sheetName == AppValues.EXCEL_OPTION_SHEET_NAME)
+                    isFoundExportConfigSheet = true;
             }
-            if (!isFoundDateSheet)
+            if (!isFoundDataSheet)
             {
                 errorString = string.Format("错误：{0}中不含有Sheet名为{1}的数据表", filePath, AppValues.EXCEL_DATA_SHEET_NAME.Replace("$", ""));
                 return null;
@@ -82,6 +86,14 @@ public class XlsxReader
                 da = new OleDbDataAdapter();
                 da.SelectCommand = new OleDbCommand(String.Format("Select * FROM [{0}]", AppValues.EXCEL_CONFIG_SHEET_NAME), conn);
                 da.Fill(ds, AppValues.EXCEL_CONFIG_SHEET_NAME);
+            }
+
+            if (isFoundExportConfigSheet == true)
+            {
+                da.Dispose();
+                da = new OleDbDataAdapter();
+                da.SelectCommand = new OleDbCommand(String.Format("Select * FROM [{0}]", AppValues.EXCEL_OPTION_SHEET_NAME), conn);
+                da.Fill(ds, AppValues.EXCEL_OPTION_SHEET_NAME);
             }
         }
         catch

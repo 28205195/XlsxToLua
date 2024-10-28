@@ -42,7 +42,12 @@ public class TableInfo
         foreach (FieldInfo fieldInfo in _fieldInfo)
         {
             if (fieldInfo.IsIgnoreClientExport == false)
-                allClientFieldInfo.Add(fieldInfo);
+            {
+                if (fieldInfo.ExportParam == ExportType.Client)
+                {
+                    allClientFieldInfo.Add(fieldInfo);
+                }
+            }
         }
 
         return allClientFieldInfo;
@@ -77,7 +82,12 @@ public class TableInfo
                 _AddClientFieldInfoFromOneField(childField, allFieldInfo);
         }
         else if (fieldInfo.IsIgnoreClientExport == false)
-            allFieldInfo.Add(fieldInfo);
+        {
+            if (fieldInfo.ExportParam == ExportType.Client)
+            {
+                allFieldInfo.Add(fieldInfo);
+            }
+        }
     }
 }
 
@@ -126,11 +136,14 @@ public class FieldInfo
     public string DatabaseFieldType { get; set; }
     // 是否忽略进行lua、csv、json等客户端方式导出（未填写字段名但填写了数据库导出信息的字段，仅进行数据库导出）
     public bool IsIgnoreClientExport { get; set; }
+    // 导出类型
+    public ExportType ExportParam { get; set; }
 
     public FieldInfo()
     {
         ExtraParam = new Dictionary<string, object>();
         IsIgnoreClientExport = false;
+        ExportParam = ExportType.Client;
     }
 }
 
@@ -273,4 +286,14 @@ public enum TimeFormatType
 {
     FormatString,          // 符合C#类库要求的标准时间格式
     ReferenceTimeSec,      // 用距离0点的秒数表示
+}
+
+/// <summary>
+/// 按需决定字段导出类型
+/// </summary>
+public enum ExportType
+{
+    All,                    // 服务端(由数据库再导出.dat)
+    Client,                 // 客户端
+    Server,                 // 服务端
 }

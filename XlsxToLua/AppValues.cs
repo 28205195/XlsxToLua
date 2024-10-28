@@ -18,6 +18,11 @@ public class AppValues
     public const string EXCEL_CONFIG_SHEET_NAME = "config$";
 
     /// <summary>
+    /// Excel文件中存放该表格配置的工作簿Sheet名(选项配置)
+    /// </summary>
+    public const string EXCEL_OPTION_SHEET_NAME = "option$";
+
+    /// <summary>
     /// Excel临时文件的文件名前缀
     /// </summary>
     public const string EXCEL_TEMP_FILE_FILE_NAME_START_STRING = "~$";
@@ -83,182 +88,26 @@ public class AppValues
     public const string ALLOWED_NULL_NUMBER_PARAM_STRING = "-allowedNullNumber";
 
     /// <summary>
-    /// 声明额外导出为其他格式文件时，涉及所有文件
-    /// </summary>
-    public const string EXPORT_ALL_TO_EXTRA_FILE_PARAM_STRING = "$all";
-
-    /// <summary>
-    /// 声明将指定的Excel文件额外导出为csv文件
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_STRING = "-exportCsv";
-
-    /// <summary>
-    /// 声明导出csv文件时的参数
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_PARAM_STRING = "-exportCsvParam";
-
-    /// <summary>
-    /// 声明将指定的Excel文件额外导出为csv对应C#类文件
-    /// </summary>
-    public const string EXPORT_CS_CLASS_PARAM_STRING = "-exportCsClass";
-
-    /// <summary>
-    /// 声明导出与csv对应C#类文件的参数
-    /// </summary>
-    public const string EXPORT_CS_CLASS_PARAM_PARAM_STRING = "-exportCsClassParam";
-
-    /// <summary>
-    /// 声明将指定的Excel文件额外导出为csv对应Java类文件
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_STRING = "-exportJavaClass";
-
-    /// <summary>
-    /// 声明导出与csv对应Java类文件的参数
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_PARAM_STRING = "-exportJavaClassParam";
-
-    /// <summary>
-    /// 声明将指定的Excel文件额外导出为json文件
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_STRING = "-exportJson";
-
-    /// <summary>
-    /// 声明导出json文件时的参数
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_PARAM_STRING = "-exportJsonParam";
-
-    /// <summary>
-    /// 导出csv文件参数下属的具体参数，用于配置导出路径
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_EXPORT_PATH_PARAM_STRING = "exportPath";
-
-    /// <summary>
-    /// 导出csv文件参数下属的具体参数，用于配置导出文件的扩展名
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_EXTENSION_PARAM_STRING = "extension";
-
-    /// <summary>
-    /// 导出csv文件参数下属的具体参数，用于配置字段间的分隔符
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_SPLIT_STRING_PARAM_STRING = "splitString";
-
-    /// <summary>
-    /// 导出csv文件参数下属的具体参数，用于配置是否在首行列举字段名称
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_IS_EXPORT_COLUMN_NAME_PARAM_STRING = "isExportColumnName";
-
-    /// <summary>
-    /// 导出csv文件参数下属的具体参数，用于配置是否在其后列举字段数据类型
-    /// </summary>
-    public const string EXPORT_CSV_PARAM_IS_EXPORT_COLUMN_DATA_TYPE_PARAM_STRING = "isExportColumnDataType";
-
-    /// <summary>
-    /// 导出csv对应C#类文件参数下属的具体参数，用于配置导出路径
-    /// </summary>
-    public const string EXPORT_CS_CLASS_PARAM_EXPORT_PATH_PARAM_STRING = "exportPath";
-
-    /// <summary>
-    /// 导出csv对应C#类文件参数下属的具体参数，用于配置命名空间
-    /// </summary>
-    public const string EXPORT_CS_CLASS_PARAM_NAMESPACE_PARAM_STRING = "namespace";
-
-    /// <summary>
-    /// 导出csv对应C#类文件参数下属的具体参数，用于配置引用类库
-    /// </summary>
-    public const string EXPORT_CS_CLASS_PARAM_USING_PARAM_STRING = "using";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置导出路径
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_EXPORT_PATH_PARAM_STRING = "exportPath";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置包名
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_PACKAGE_PARAM_STRING = "package";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置引用类库
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_IMPORT_PARAM_STRING = "import";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置是否将日期型转为Date而不是Calendar类型
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_IS_USE_DATE_PARAM_STRING = "isUseDate";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置是否生成无参构造函数
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_IS_GENERATE_CONSTRUCTOR_WITHOUT_FIELDS_PARAM_STRING = "isGenerateConstructorWithoutFields";
-
-    /// <summary>
-    /// 导出csv对应Java类文件参数下属的具体参数，用于配置是否生成含全部参数的构造函数
-    /// </summary>
-    public const string EXPORT_JAVA_CLASS_PARAM_IS_GENERATE_CONSTRUCTOR_WITH_ALL_FIELDS_PARAM_STRING = "isGenerateConstructorWithAllFields";
-
-    /// <summary>
-    /// 对导出csv对应C#或Java类文件进行自动命名的参数
-    /// </summary>
-    public const string AUTO_NAME_CSV_CLASS_PARAM_STRING = "-autoNameCsvClassParam";
-
-    /// <summary>
-    /// 对导出csv对应C#或Java类文件自动命名参数下属的具体参数，用于配置在类名前增加的前缀
-    /// </summary>
-    public const string AUTO_NAME_CSV_CLASS_PARAM_CLASS_NAME_PREFIX_PARAM_STRING = "classNamePrefix";
-
-    /// <summary>
-    /// 对导出csv对应C#或Java类文件自动命名参数下属的具体参数，用于配置在类名前增加的后缀
-    /// </summary>
-    public const string AUTO_NAME_CSV_CLASS_PARAM_CLASS_NAME_POSTFIX_PARAM_STRING = "classNamePostfix";
-
-    /// <summary>
-    /// 导出json文件参数下属的具体参数，用于配置导出路径
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_EXPORT_PATH_PARAM_STRING = "exportPath";
-
-    /// <summary>
-    /// 导出json文件参数下属的具体参数，用于配置导出文件的扩展名
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_EXTENSION_PARAM_STRING = "extension";
-
-    /// <summary>
-    /// 导出json文件参数下属的具体参数，用于配置是否将生成的json字符串整理为带缩进格式的形式
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_IS_FORMAT_PARAM_STRING = "isFormat";
-
-    /// <summary>
-    /// 导出json文件参数下属的具体参数，用于配置是否生成为各行数据对应的json object包含在一个json array的形式
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_IS_EXPORT_JSON_ARRAY_FORMAT_PARAM_STRING = "isExportJsonArrayFormat";
-
-    /// <summary>
-    /// 导出json文件参数下属的具体参数，用于配置若生成包含在一个json object的形式，是否使每行字段信息对应的json object中包含主键列对应的键值对
-    /// </summary>
-    public const string EXPORT_JSON_PARAM_IS_MAP_INCLUDE_KEY_COLUMN_VALUE_PARAM_STRING = "isMapIncludeKeyColumnValue";
-
-    /// <summary>
-    /// 导出csv对应C#类文件的扩展名（不含点号）
-    /// </summary>
-    public static string EXPORT_CS_CLASS_FILE_EXTENSION = "cs";
-
-    /// <summary>
-    /// 导出csv对应Java类文件的扩展名（不含点号）
-    /// </summary>
-    public static string EXPORT_JAVA_CLASS_FILE_EXTENSION = "java";
-
-    /// <summary>
     /// 配置文件（配置自定义的检查规则）的文件名
     /// </summary>
     public const string CONFIG_FILE_NAME = "config.txt";
 
-    // 每张数据表前五行分别声明字段描述、字段变量名、字段数据类型、字段检查规则、导出到数据库中的字段名及类型（行编号从0开始）
+    /// <summary>
+    /// 导出类型名称定义
+    /// </summary>
+    public const string EXPORT_ALL = "all";
+    public const string EXPORT_CLIENT = "client";
+    public const string EXPORT_SERVER = "server";
+
+    // 每张数据表前六行分别声明字段描述、字段变量名、字段数据类型、字段检查规则、导出到数据库中的字段名及类型（行编号从0开始）、字段导出类型（客户端/服务端）
     public const int DATA_FIELD_DESC_INDEX = 0;
     public const int DATA_FIELD_NAME_INDEX = 1;
     public const int DATA_FIELD_DATA_TYPE_INDEX = 2;
     public const int DATA_FIELD_CHECK_RULE_INDEX = 3;
-    public const int DATA_FIELD_EXPORT_DATABASE_FIELD_INFO = 4;
-    public const int DATA_FIELD_DATA_START_INDEX = 5;
+    public const int DATA_FIELD_EXPORT_DATABASE_FIELD_INDEX = 4;
+    public const int DATA_FIELD_EXPORT_TYPE_INDEX = 5;
+    public const int DATA_FIELD_MYSQL_TABLE_INDEX = 6;
+    public const int DATA_FIELD_DATA_START_INDEX = 10;
 
     // 每张配置表中的一列为一个配置参数的声明，其中第一行声明参数名，其余行声明具体参数（行编号从0开始）
     public const int CONFIG_FIELD_DEFINE_INDEX = 0;
@@ -276,11 +125,12 @@ public class AppValues
     public const string CONFIG_NAME_EXPORT_DATABASE_WRITE_NULL_FOR_EMPTY_STRING = "exportDatabaseWriteNullForEmptyString";
     // 声明某张表格导出为lua table时，是否将主键列的值作为table中的元素
     public const string CONFIG_NAME_ADD_KEY_TO_LUA_TABLE = "addKeyToLuaTable";
-    // 声明某张表格导出csv对应C#或Java文件的类名
-    public const string CONFIG_NAME_EXPORT_CSV_CLASS_NAME = "exportCsvClassName";
 
+    // 声明对某张表格设置特殊导出规则的配置参数名（合并相同数据）
+    public const string CONFIG_NAME_EXPORT_COMBINE_FIELD = "combineSameField";
     // 声明对某张表格不进行默认导出的参数配置
-    public const string CONFIG_PARAM_NOT_EXPORT_ORIGINAL_TABLE = "-notExportOriginalTable";
+    public const string CONFIG_PARAM_NOT_EXPORT_ORIGINAL_TABLE_ = "-notExportOriginalTable";
+    public const string CONFIG_PARAM_NOT_EXPORT_ORIGINAL_TABLE = "notExportOriginalTable";
 
     // 以下为config配置文件中配置项的key名
     // MySQL连接字符串
@@ -449,131 +299,6 @@ public class AppValues
     /// 存储本次忽略导出的Excel文件名
     /// </summary>
     public static List<string> ExceptExportTableNames = new List<string>();
-
-    /// <summary>
-    /// 存储本次要额外导出为csv文件的Excel文件名
-    /// </summary>
-    public static List<string> ExportCsvTableNames = new List<string>();
-
-    /// <summary>
-    /// 导出csv文件的存储路径
-    /// </summary>
-    public static string ExportCsvPath = null;
-
-    /// <summary>
-    /// 导出csv文件的扩展名（不含点号），默认为csv
-    /// </summary>
-    public static string ExportCsvExtension = "csv";
-
-    /// <summary>
-    /// 导出csv文件中的字段分隔符，默认为英文逗号
-    /// </summary>
-    public static string ExportCsvSplitString = ",";
-
-    /// <summary>
-    /// 导出的csv文件中是否在首行列举字段名称，默认为是
-    /// </summary>
-    public static bool ExportCsvIsExportColumnName = true;
-
-    /// <summary>
-    /// 导出的csv文件中是否在其后列举字段数据类型，默认为是
-    /// </summary>
-    public static bool ExportCsvIsExportColumnDataType = true;
-
-    /// <summary>
-    /// 存储本次要额外导出为csv对应C#类文件的Excel文件名
-    /// </summary>
-    public static List<string> ExportCsClassTableNames = new List<string>();
-
-    /// <summary>
-    /// 导出csv对应C#类文件的存储路径
-    /// </summary>
-    public static string ExportCsClassPath = null;
-
-    /// <summary>
-    /// 导出csv对应C#类文件中的命名空间
-    /// </summary>
-    public static string ExportCsClassNamespace = null;
-
-    /// <summary>
-    /// 导出csv对应C#类文件中的引用类库
-    /// </summary>
-    public static List<string> ExportCsClassUsing = null;
-
-    /// <summary>
-    /// 存储本次要额外导出为csv对应Java类文件的Excel文件名
-    /// </summary>
-    public static List<string> ExportJavaClassTableNames = new List<string>();
-
-    /// <summary>
-    /// 导出csv对应Java类文件的存储路径
-    /// </summary>
-    public static string ExportJavaClassPath = null;
-
-    /// <summary>
-    /// 导出csv对应Java类文件的包名
-    /// </summary>
-    public static string ExportJavaClassPackage = null;
-
-    /// <summary>
-    /// 导出csv对应Java类文件中的引用类库
-    /// </summary>
-    public static List<string> ExportJavaClassImport = null;
-
-    /// <summary>
-    /// 导出csv对应Java类文件中，是否将时间型转为Date而不是Calendar，默认为true
-    /// </summary>
-    public static bool ExportJavaClassIsUseDate = true;
-
-    /// <summary>
-    /// 导出csv对应Java类文件中，是否生成无参构造函数，默认为false
-    /// </summary>
-    public static bool ExportJavaClassisGenerateConstructorWithoutFields = false;
-
-    /// <summary>
-    /// 导出csv对应Java类文件中，是否生成含全部参数的构造函数，默认为false
-    /// </summary>
-    public static bool ExportJavaClassIsGenerateConstructorWithAllFields = false;
-
-    /// <summary>
-    /// 导出csv对应C#或Java类的类名前缀
-    /// </summary>
-    public static string ExportCsvClassClassNamePrefix = null;
-
-    /// <summary>
-    /// 导出csv对应C#或Java类的类名后缀
-    /// </summary>
-    public static string ExportCsvClassClassNamePostfix = null;
-
-    /// <summary>
-    /// 存储本次要额外导出为json文件的Excel文件名
-    /// </summary>
-    public static List<string> ExportJsonTableNames = new List<string>();
-
-    /// <summary>
-    /// 导出json文件的存储路径
-    /// </summary>
-    public static string ExportJsonPath = null;
-
-    /// <summary>
-    /// 导出json文件的扩展名（不含点号），默认为txt
-    /// </summary>
-    public static string ExportJsonExtension = "txt";
-
-    /// <summary>
-    /// 导出的json文件中是否将json字符串整理为带缩进格式的形式，默认为否
-    /// </summary>
-    public static bool ExportJsonIsFormat = false;
-
-    /// <summary>
-    /// 导出的json文件是否生成为各行数据对应的json object包含在一个json array的形式，默认为是
-    /// </summary>
-    public static bool ExportJsonIsExportJsonArrayFormat = true;
-
-    /// <summary>
-    /// 导出的json文件，若生成包含在一个json object的形式，是否使每行字段信息对应的json object中包含主键列对应的键值对，默认为是
-    /// </summary>
-    public static bool ExportJsonIsExportJsonMapIncludeKeyColumnValue = true;
 
     /// <summary>
     /// 存储运行时打印的所有信息，在程序运行完毕后输出为txt文件，从而解决如果输出内容过多控制台无法显示全部信息的问题

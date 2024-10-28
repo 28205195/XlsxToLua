@@ -6,6 +6,7 @@ public class AppValues
 {
     public const string PROGRAM_NAME = "XlsxToLua.exe";
     public const string GUI_PROGRAM_NAME = "XlsxToLuaGUI.exe";
+    public const string CONFIG_FILE_NAME = "config.txt";
 
     public const string EXPORT_INCLUDE_SUBFOLDER_PARAM_STRING = "-exportIncludeSubfolder";
     public const string EXPORT_KEEP_DIRECTORY_STRUCTURE_PARAM_STRING = "-exportKeepDirectoryStructure";

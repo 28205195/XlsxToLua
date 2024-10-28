@@ -1,7 +1,7 @@
 ﻿####以下为程序配置
 
 ####连接MySQL数据库的参数字符串
-connectMySQLString:server=127.0.0.1;port=3306;uid=root;password=root;database=mydb;Charset=utf8;
+connectMySQLString:server=127.0.0.1;port=3306;uid=root;password=ab123456;database=mydb;Charset=utf8;
 ####创建MySQL数据库表格时额外指定的参数字符串
 createDatabaseTableExtraParam:ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 ####未声明date型的输入格式时所采用的默认格式（支持以下几种：1、符合C#类库要求的标准时间格式。2、#1970sec表示距离1970年1月1日的秒数，#1970msec则为毫秒数）

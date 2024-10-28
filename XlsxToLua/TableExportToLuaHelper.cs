@@ -24,8 +24,11 @@ public class TableExportToLuaHelper
     {
         StringBuilder content = new StringBuilder();
 
+        content.AppendLine("local ret = {};");
+        content.AppendLine("");
+
         // 生成数据内容开头
-        content.AppendLine("return {");
+        content.AppendLine("ret.data = {");
 
         // 当前缩进量
         int currentLevel = 1;
@@ -90,11 +93,107 @@ public class TableExportToLuaHelper
         }
 
         // 生成数据内容结尾
-        content.AppendLine("}");
+        content.AppendLine("};");
+
+        TableInfo config = null;
+        string strName = tableInfo.TableName + "@Config";
+        if (AppValues.TableInfo.ContainsKey(strName))
+        {
+            config = AppValues.TableInfo[strName];
+            if (config != null)
+            {
+                // 生成数据内容开头
+                content.AppendLine("ret.config = {");
+
+                // 当前缩进量
+                currentLevel = 1;
+
+                // 逐行读取表格内容生成lua table
+                allField = config.GetAllClientFieldInfo();
+                dataCount = config.GetKeyColumnFieldInfo().Data.Count;
+                
+                if (dataCount == 1)
+                {
+                    // 将其他列依次作为value生成
+                    for (int column = 1; column < allField.Count; ++column)
+                    {
+                        string oneFieldString = _GetOneField(allField[column], 0, currentLevel, out errorString);
+                        if (errorString != null)
+                        {
+                            errorString = string.Format("导出表格{0}失败，", config.TableName) + errorString;
+                            return false;
+                        }
+                        else
+                            content.Append(oneFieldString);
+                    }
+                }
+                else
+                {
+                    for (int row = 0; row < dataCount; ++row)
+                    {
+                        // 将主键列作为key生成
+                        content.Append(_GetLuaTableIndentation(currentLevel));
+                        FieldInfo keyColumnField = allField[0];
+                        if (keyColumnField.DataType == DataType.Int || keyColumnField.DataType == DataType.Long)
+                            content.AppendFormat("[{0}]", keyColumnField.Data[row]);
+                        // 注意：像“1_2”这样的字符串作为table的key必须加[""]否则lua认为是语法错误
+                        else if (keyColumnField.DataType == DataType.String)
+                            content.AppendFormat("[\"{0}\"]", keyColumnField.Data[row]);
+                        else
+                        {
+                            errorString = "用ExportTableToLua导出不支持的主键列数据类型";
+                            Utils.LogErrorAndExit(errorString);
+                            return false;
+                        }
+
+                        content.AppendLine(" = {");
+                        ++currentLevel;
+
+                        // 将其他列依次作为value生成
+                        for (int column = 1; column < allField.Count; ++column)
+                        {
+                            string oneFieldString = _GetOneField(allField[column], row, currentLevel, out errorString);
+                            if (errorString != null)
+                            {
+                                errorString = string.Format("导出表格{0}失败，", config.TableName) + errorString;
+                                return false;
+                            }
+                            else
+                                content.Append(oneFieldString);
+                        }
+
+                        // 一行数据生成完毕后添加右括号结尾等
+                        --currentLevel;
+                        content.Append(_GetLuaTableIndentation(currentLevel));
+                        content.AppendLine("},");
+                    }
+                }
+
+                // 生成数据内容结尾
+                content.AppendLine("};");
+            }
+        }
+
+        content.AppendLine("");
+        // 生成返回ret
+        content.AppendLine("return ret;");
 
         string exportString = content.ToString();
         if (AppValues.IsNeedColumnInfo == true)
-            exportString = _GetColumnInfo(tableInfo) + exportString;
+        {
+            string strTemp = null;
+            strTemp += _COMMENT_OUT_STRING;
+            strTemp += "[data]:\n";
+            strTemp += _GetColumnInfo(tableInfo);
+
+            if (config != null)
+            {
+                strTemp += _COMMENT_OUT_STRING;
+                strTemp += "[config]:\n";
+                strTemp += _GetColumnInfo(config);
+            }
+            exportString = strTemp + exportString;
+        }
 
         // 保存为lua文件
         if (Utils.SaveLuaFile(tableInfo.TableName, tableInfo.TableName, exportString) == true)
@@ -112,7 +211,7 @@ public class TableExportToLuaHelper
     /// <summary>
     /// 按配置的特殊索引导出方式输出lua文件（如果声明了在生成的lua文件开头以注释形式展示列信息，将生成更直观的嵌套字段信息，而不同于普通导出规则的列信息展示）
     /// </summary>
-    public static bool SpecialExportTableToLua(TableInfo tableInfo, string exportRule, out string errorString)
+    public static bool SpecialExportTableToLua(TableInfo tableInfo, string exportRule, bool isCombineSameField, out string errorString)
     {
         exportRule = exportRule.Trim();
         // 解析按这种方式导出后的lua文件名
@@ -237,17 +336,50 @@ public class TableExportToLuaHelper
             // 检查字段是否存在
             foreach (string fieldName in fieldNames)
             {
-                FieldInfo fieldInfo = tableInfo.GetFieldInfoByFieldName(fieldName);
-                if (fieldInfo == null)
-                {
-                    errorString = string.Format("导出配置\"{0}\"定义错误，声明的table value中的字段\"{1}\"不存在\n", exportRule, fieldName);
-                    return false;
-                }
+                string[] tmpNames = fieldName.Split(new char[] { '-' }, System.StringSplitOptions.RemoveEmptyEntries);
 
-                if (tableValueField.Contains(fieldInfo))
-                    Utils.LogWarning(string.Format("警告：导出配置\"{0}\"定义中，声明的table value中的字段存在重复，字段名为{1}（列号{2}），本工具只生成一次，请修正错误\n", exportRule, fieldName, Utils.GetExcelColumnName(fieldInfo.ColumnSeq + 1)));
+                if (tmpNames.Length == 2)
+                {
+
+                    if(!AppValues.TableInfo.ContainsKey(tmpNames[0]))
+                    {
+                        errorString = string.Format("导出配置\"{0}\"定义错误，声明的table\"{1}\"不存在\n", exportRule, tmpNames[0]);
+                        return false;
+                    }
+
+                    TableInfo ti = AppValues.TableInfo[tmpNames[0]];
+                    if (ti == null)
+                    {
+                        errorString = string.Format("导出配置\"{0}\"定义错误，声明的table\"{1}\"不存在\n", exportRule, tmpNames[0]);
+                        return false;
+                    }
+
+                    FieldInfo fieldInfo = ti.GetFieldInfoByFieldName(tmpNames[1]);
+                    if (fieldInfo == null)
+                    {
+                        errorString = string.Format("导出配置\"{0}\"定义错误，声明的table中的字段\"{1}\"不存在\n", exportRule, tmpNames[1]);
+                        return false;
+                    }
+
+                    if (tableValueField.Contains(fieldInfo))
+                        Utils.LogWarning(string.Format("警告：导出配置\"{0}\"定义中，声明的table value中的字段存在重复，字段名为{1}（列号{2}），本工具只生成一次，请修正错误\n", exportRule, fieldName, Utils.GetExcelColumnName(fieldInfo.ColumnSeq + 1)));
+                    else
+                        tableValueField.Add(fieldInfo);
+                }
                 else
-                    tableValueField.Add(fieldInfo);
+                {
+                    FieldInfo fieldInfo = tableInfo.GetFieldInfoByFieldName(fieldName);
+                    if (fieldInfo == null)
+                    {
+                        errorString = string.Format("导出配置\"{0}\"定义错误，声明的table value中的字段\"{1}\"不存在\n", exportRule, fieldName);
+                        return false;
+                    }
+
+                    if (tableValueField.Contains(fieldInfo))
+                        Utils.LogWarning(string.Format("警告：导出配置\"{0}\"定义中，声明的table value中的字段存在重复，字段名为{1}（列号{2}），本工具只生成一次，请修正错误\n", exportRule, fieldName, Utils.GetExcelColumnName(fieldInfo.ColumnSeq + 1)));
+                    else
+                        tableValueField.Add(fieldInfo);
+                }
             }
         }
         else if (exportRule.EndsWith("}") && leftBraceIndex == -1)
@@ -286,12 +418,21 @@ public class TableExportToLuaHelper
             FieldInfo lastIndexField = indexField[indexField.Count - 1];
             var lastIndexFieldData = lastIndexField.Data[i];
             if (!temp.ContainsKey(lastIndexFieldData))
+            {
                 temp.Add(lastIndexFieldData, i);
+            }
             else
             {
-                errorString = string.Format("错误：对表格{0}按\"{1}\"规则进行特殊索引导出时发现第{2}行与第{3}行在各个索引字段的值完全相同，导出被迫停止，请修正错误后重试\n", tableInfo.TableName, exportRule, i + AppValues.DATA_FIELD_DATA_START_INDEX + 1, temp[lastIndexFieldData]);
-                Utils.LogErrorAndExit(errorString);
-                return false;
+                if (isCombineSameField)
+                {
+                    temp[lastIndexFieldData] = i;
+                }
+                else
+                {
+                    errorString = string.Format("错误：对表格{0}按\"{1}\"规则进行特殊索引导出时发现第{2}行与第{3}行在各个索引字段的值完全相同，导出被迫停止，请修正错误后重试\n", tableInfo.TableName, exportRule, i + AppValues.DATA_FIELD_DATA_START_INDEX + 1, temp[lastIndexFieldData]);
+                    Utils.LogErrorAndExit(errorString);
+                    return false;
+                }
             }
         }
         // 进行数据完整性检查
@@ -308,8 +449,11 @@ public class TableExportToLuaHelper
         // 生成导出的文件内容
         StringBuilder content = new StringBuilder();
 
+        content.AppendLine("local ret = {};");
+        content.AppendLine("");
+
         // 生成数据内容开头
-        content.AppendLine("return {");
+        content.AppendLine("ret.data = {");
 
         // 当前缩进量
         int currentLevel = 1;
@@ -323,7 +467,89 @@ public class TableExportToLuaHelper
         }
 
         // 生成数据内容结尾
-        content.AppendLine("}");
+        content.AppendLine("};");
+
+        TableInfo config = null;
+        string strName = tableInfo.TableName + "@Config";
+        if (AppValues.TableInfo.ContainsKey(strName))
+        {
+            config = AppValues.TableInfo[strName];
+            if (config != null)
+            {
+                // 生成数据内容开头
+                content.AppendLine("ret.config = {");
+
+                // 当前缩进量
+                currentLevel = 1;
+
+                // 逐行读取表格内容生成lua table
+                List<FieldInfo> allField = config.GetAllClientFieldInfo();
+                int dataCount = config.GetKeyColumnFieldInfo().Data.Count;
+                
+                if (dataCount == 1)
+                {
+                    // 将其他列依次作为value生成
+                    for (int column = 1; column < allField.Count; ++column)
+                    {
+                        string oneFieldString = _GetOneField(allField[column], 0, currentLevel, out errorString);
+                        if (errorString != null)
+                        {
+                            errorString = string.Format("导出表格{0}失败，", config.TableName) + errorString;
+                            return false;
+                        }
+                        else
+                            content.Append(oneFieldString);
+                    }
+                }
+                else
+                {
+                    for (int row = 0; row < dataCount; ++row)
+                    {
+                        // 将主键列作为key生成
+                        content.Append(_GetLuaTableIndentation(currentLevel));
+                        FieldInfo keyColumnField = allField[0];
+                        if (keyColumnField.DataType == DataType.Int || keyColumnField.DataType == DataType.Long)
+                            content.AppendFormat("[{0}]", keyColumnField.Data[row]);
+                        // 注意：像“1_2”这样的字符串作为table的key必须加[""]否则lua认为是语法错误
+                        else if (keyColumnField.DataType == DataType.String)
+                            content.AppendFormat("[\"{0}\"]", keyColumnField.Data[row]);
+                        else
+                        {
+                            errorString = "用ExportTableToLua导出不支持的主键列数据类型";
+                            Utils.LogErrorAndExit(errorString);
+                            return false;
+                        }
+
+                        content.AppendLine(" = {");
+                        ++currentLevel;
+
+                        // 将其他列依次作为value生成
+                        for (int column = 1; column < allField.Count; ++column)
+                        {
+                            string oneFieldString = _GetOneField(allField[column], row, currentLevel, out errorString);
+                            if (errorString != null)
+                            {
+                                errorString = string.Format("导出表格{0}失败，", config.TableName) + errorString;
+                                return false;
+                            }
+                            else
+                                content.Append(oneFieldString);
+                        }
+
+                        // 一行数据生成完毕后添加右括号结尾等
+                        --currentLevel;
+                        content.Append(_GetLuaTableIndentation(currentLevel));
+                        content.AppendLine("},");
+                    }
+                }
+
+                // 生成数据内容结尾
+                content.AppendLine("};");
+            }
+        }
+
+        // 生成返回ret
+        content.AppendLine("return ret;");
 
         string exportString = content.ToString();
         if (AppValues.IsNeedColumnInfo == true)
@@ -348,7 +574,19 @@ public class TableExportToLuaHelper
             --level;
             columnInfo.AppendLine(string.Concat(_COMMENT_OUT_STRING, _GetFieldNameIndentation(level), "}"));
 
-            exportString = string.Concat(columnInfo, System.Environment.NewLine, exportString);
+            string strTemp = null;
+            strTemp += _COMMENT_OUT_STRING;
+            strTemp += "[data]:\n";
+            strTemp += columnInfo.ToString();
+
+            if (config != null)
+            {
+                strTemp += "\n";
+                strTemp += _COMMENT_OUT_STRING;
+                strTemp += "[config]:\n";
+                strTemp += _GetColumnInfo(config);
+            }
+            exportString = strTemp + exportString;
         }
 
         // 保存为lua文件
@@ -482,7 +720,23 @@ public class TableExportToLuaHelper
         // 变量名前的缩进
         content.Append(_GetLuaTableIndentation(level));
         // 变量名
-        content.Append(fieldInfo.FieldName);
+        bool isNumberName = true;
+        foreach (char c in fieldInfo.FieldName)
+        {
+            if (!(c >= '0' && c <= '9'))
+            {
+                isNumberName = false;
+                break;
+            }
+        }
+        if (isNumberName)
+        {
+            content.Append("[" + fieldInfo.FieldName + "]");
+        }
+        else
+        {
+            content.Append(fieldInfo.FieldName);
+        }
         content.Append(" = ");
         // 对应数据值
         string value = null;
